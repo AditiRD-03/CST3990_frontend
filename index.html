@@ -1,0 +1,747 @@
+<html lang="en">
+<head>  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>RapidReads</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <style>
+    /* Basic styling to make the app functional */
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .auth-modal { background: white; padding: 20px; border-radius: 8px; max-width: 400px; width: 90%; }
+    .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-auth { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .auth-body input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; }
+    .auth-btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; cursor: pointer; }
+    .auth-error { color: red; margin-top: 10px; }
+    .navbar { background: #333; color: white; padding: 10px 0; }
+    .nav-content { display: flex; align-items: center; gap: 20px; padding: 0 20px; }
+    .nav-btn { background: #555; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+    .search-bar input { padding: 8px; }
+    .checkout-button { background: #28a745; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+    .landing-hero { display: flex; padding: 40px 20px; }
+    .landing-hero-left { flex: 1; }
+    .landing-hero-right { flex: 1; text-align: center; }
+    .browse-btn { background: #007bff; color: white; border: none; padding: 12px 24px; cursor: pointer; }
+    .about-page, .contact-page { padding: 20px; }
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+    .product-item { border: 1px solid #ddd; padding: 15px; text-align: center; }
+    .product-item img { max-width: 100%; height: 200px; object-fit: cover; cursor: pointer; }
+    .addToCart { background: #28a745; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+    .addToCart:disabled { background: #ccc; cursor: not-allowed; }
+    .popup { position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; padding: 10px 20px; border-radius: 4px; z-index: 1000; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .modal-button { background: #007bff; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+    .book-details-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .book-details-content { background: white; padding: 20px; border-radius: 8px; max-width: 600px; width: 90%; }
+    .book-details-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .book-details-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .book-details-body { display: flex; gap: 20px; }
+    .book-details-image img { max-width: 200px; }
+    .checkout-div { padding: 20px; }
+    .checkout-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .input-fields input { width: 100%; padding: 8px; margin: 5px 0; }
+    .cart-item-box { display: flex; gap: 10px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    .cart-item-img { width: 60px; height: 80px; object-fit: cover; cursor: pointer; }
+    .delete-button { background: #dc3545; color: white; border: none; padding: 4px 8px; cursor: pointer; }
+    .placeOrder { background: #28a745; color: white; border: none; padding: 12px 24px; cursor: pointer; }
+    .chatbot-fab { position: fixed; bottom: 20px; right: 20px; background: #007bff; color: white; border: none; border-radius: 50%; width: 60px; height: 60px; cursor: pointer; }
+    .chatbot-side-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 300px; background: white; border-left: 1px solid #ddd; z-index: 999; display: flex; flex-direction: column; }
+    .chatbot-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #007bff; color: white; }
+    .chatbot-messages { flex: 1; padding: 10px; overflow-y: auto; }
+    .message { margin: 10px 0; }
+    .message.user { text-align: right; }
+    .message-bubble { display: inline-block; padding: 8px 12px; border-radius: 8px; max-width: 80%; }
+    .message.user .message-bubble { background: #007bff; color: white; }
+    .message.bot .message-bubble { background: #f0f0f0; }
+    .chatbot-input { display: flex; padding: 10px; }
+    .chatbot-input input { flex: 1; padding: 8px; }
+    .send-button { background: #007bff; color: white; border: none; padding: 8px 12px; cursor: pointer; }
+    .filter-section { padding: 0 20px; }
+    .filter-section select { padding: 8px; margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 @click="goToLanding" style="cursor: pointer;">RapidReads</h1>
+  </header>
+  <div id="app">
+    
+    <!-- LOGIN/REGISTER OVERLAY -->
+    <div class="auth-overlay" v-if="currentPage === 'login' || currentPage === 'register'">
+      <div class="auth-modal">
+        <div class="auth-header">
+          <h2 v-if="currentPage === 'login'">Login</h2>
+          <h2 v-else>Register</h2>
+          <button class="close-auth" @click="currentPage='landing'">&times;</button>
+        </div>
+        <div class="auth-body">
+          <!-- LOGIN FORM -->
+          <form v-if="currentPage === 'login'" @submit.prevent="loginUser">
+            <label>Email:</label>
+            <input type="email" v-model="login.email" required />
+            <label>Password:</label>
+            <input type="password" v-model="login.password" required />
+            <button type="submit" class="auth-btn">Login</button>
+            <p class="switch-auth">
+              Don't have an account?
+              <a href="#" @click.prevent="currentPage='register'">Register here</a>
+            </p>
+          </form>
+          <!-- REGISTRATION FORM -->
+          <form v-if="currentPage === 'register'" @submit.prevent="registerUser">
+            <label>First Name:</label>
+            <input type="text" v-model="register.firstName" required />
+            <label>Last Name:</label>
+            <input type="text" v-model="register.lastName" required />
+            <label>Email:</label>
+            <input type="email" v-model="register.email" required />
+            <label>Password:</label>
+            <input type="password" v-model="register.password" required />
+            <button type="submit" class="auth-btn">Register</button>
+            <p class="switch-auth">
+              Already have an account?
+              <a href="#" @click.prevent="currentPage='login'">Login here</a>
+            </p>
+          </form>
+        </div>
+        <div v-if="authError" class="auth-error">{{ authError }}</div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register'">
+      <div class="nav-content">
+        <span class="logo-img"><img src="images/logo.png" alt="" /></span>
+        <h1 class="site-name" v-text="sitename"></h1>
+        <button class="nav-btn" @click="currentPage='about'">About</button>
+        <button class="nav-btn" @click="currentPage='products'">Shop</button>
+        <button class="nav-btn" @click="currentPage='contact'">Contact</button>
+        <button class="nav-btn" v-if="isLoggedIn" @click="logout">Logout</button>
+        <button class="nav-btn" v-else @click="currentPage='login'">Login</button>
+        <div class="search-bar" v-if="currentPage==='products'" style="margin-left:30px;">
+          <input type="text" v-model="searchQuery" @input="debounceSearch" placeholder="Search...">
+        </div>
+        <button
+          class="checkout-button"
+          v-if="cartitemcount > 0 && currentPage==='products'"
+          v-on:click="toggleCheckout"
+        >
+          <i class="fa-solid fa-cart-shopping"></i>
+          {{ checkoutPage ? 'Hide Checkout' : 'Checkout (' + cartitemcount + ')' }}
+        </button>
+      </div>
+    </nav>
+    
+    <!-- LANDING PAGE HERO -->
+    <div v-if="currentPage==='landing'" class="landing-hero">
+      <div class="landing-hero-left">
+        <h2>🛒 Ready to Fill Your Shelf?</h2>
+        <p>
+          Looking for your next great read? We've got you covered. From bestsellers to hidden gems, there's something here for every kind of reader.<br><br>
+          Just browse, click, and we'll take care of the rest and fast delivery right to your door.<br><br>
+          Go ahead, treat yourself to a new book. You've earned it.<br><br>
+          <b>One-click shopping. Fast delivery. Your next favorite book is just around the corner.</b>
+        </p>
+        <button class="browse-btn" @click="currentPage='products'">
+          Browse Books
+        </button>
+      </div>
+      <div class="landing-hero-right">
+        <img v-for="img in heroImages" :src="img" :alt="'Featured Book'" />
+      </div>
+    </div>
+    
+    <!-- ABOUT PAGE -->
+    <div v-if="currentPage==='about'" class="about-page">
+      <h2>About Rapid Read</h2>
+      <p>
+        At Rapid Read, we're passionate about connecting readers with their next favorite book. Founded in 2024 by avid book lovers, our mission is to make discovering and buying books fast, easy, and enjoyable.
+      </p>
+      <p>
+        We carefully curate our selection, offer speedy delivery, and aim for a seamless shopping experience. Whether you're into classics, bestsellers, or hidden gems, Rapid Read is here for you!
+      </p>
+      <p>
+        Happy Reading! 📚
+      </p>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div v-if="currentPage==='contact'" class="contact-page">
+      <h2>Contact Us</h2>
+      <p>
+        Have a question, need help, or want to give feedback? We'd love to hear from you!
+      </p>
+      <ul>
+        <li>Email: <a href="mailto:support@rapidread.com">support@rapidread.com</a></li>
+        <li>Phone: +971-555-123456</li>
+      </ul>
+    </div>
+    
+    <!-- PRODUCT PAGE -->
+    <div v-if="currentPage==='products'">
+      <div class="container-flex">
+        <div class="main-content">
+          <!-- CHATBOT SIDE PANEL -->
+          <div class="chatbot-side-panel" v-if="showChatbot">
+            <div class="chatbot-header">
+              <span>Rapid Read Chatbot</span>
+              <button @click="toggleChatbot">×</button>
+            </div>
+            <div class="chatbot-messages">
+              <div v-for="message in chatMessages" :class="['message', message.sender]">
+                <div class="message-bubble">{{ message.text }}</div>
+              </div>
+            </div>
+            <div class="chatbot-input">
+              <input type="text" v-model="chatInput" @keyup.enter="sendMessage" placeholder="Type your message..." />
+              <button class="send-button" @click="sendMessage">
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="filter-section" v-if="!checkoutPage" style="margin: 16px 0;">
+            <label for="sort-by">Sort By:</label>
+            <select v-model="sortCategory">
+              <option value="author">Author</option>
+              <option value="price">Price</option>
+              <option value="name">Name</option>
+              <option value="genre">Genre</option>
+            </select>
+            <select v-model="sortOrder">
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+          
+          <main v-if="!checkoutPage">
+            <div class="products-grid">
+              <div v-for="product in sortedProducts" :key="product.id" class="product-item">
+                <img v-bind:src="product.image" @click="showBookDetails(product)" />
+                <h2 v-text="product.title"></h2>
+                <h3 v-text="product.author"></h3>
+                <p v-text="'Genre: ' + product.genre"></p>
+                <p>Price: {{ product.price }} AED</p>
+                <p>Available: {{ product.AvailableInventory }}</p>
+                <button class="addToCart" v-on:click="addToCart(product)" v-if="canAddToCart(product)">
+                  Add to cart
+                </button>
+                <button class="addToCart" disabled v-else>Add to cart</button>
+                <span v-if="product.AvailableInventory <= 0" style="color:#c0392b;">All out!</span>
+                <span v-else-if="product.AvailableInventory < 5" style="color:#ca8b2b;">Only {{ product.AvailableInventory }} left!</span>
+              </div>
+            </div>
+          </main>
+          
+          <div v-if="checkoutPage" class="checkout-div">
+            <div class="checkout-container">
+              <div class="input-fields">
+                <h3>Customer Information</h3>
+                <p><strong>First Name:</strong> <input v-model.trim="order.firstName" @input="validateName('firstName')" /></p>
+                <p><strong>Last Name:</strong> <input v-model.trim="order.lastName" @input="validateName('lastName')" /></p>
+                <p><strong>Address:</strong> <input v-model="order.address" /></p>
+                <p><strong>City:</strong> <input v-model="order.city" /></p>
+                <p><strong>Phone:</strong> <input v-model.number="order.phone" type="number" /></p>
+              </div>
+              <div class="order-summary">
+                <h3>Order Details</h3>
+                <p><strong>First Name:</strong> {{ order.firstName }}</p>
+                <p><strong>Last Name:</strong> {{ order.lastName }}</p>
+                <p><strong>Address:</strong> {{ order.address }}</p>
+                <p><strong>City:</strong> {{ order.city }}</p>
+                <p><strong>Phone:</strong> {{ order.phone }}</p>
+              </div>
+              <div class="cart-summary">
+                <h3>Cart Summary</h3>
+                <div
+                  v-for="(item, index) in cart"
+                  :key="item.id + '-' + index"
+                  class="cart-item-box"
+                >
+                  <img :src="item.image" :alt="item.title" class="cart-item-img" @click="showBookDetails(item)" />
+                  <div class="cart-item-details">
+                    <div class="cart-item-title">{{ item.title }}</div>
+                    <div class="cart-item-author">{{ item.author }}</div>
+                    <div class="cart-item-genre"><b>Genre:</b> {{ item.genre }}</div>
+                    <div class="cart-item-price"><b>Price:</b> {{ item.price }} AED</div>
+                    <button class="delete-button" @click="removeFromCart(index)">Delete</button>
+                  </div>
+                </div>
+                <hr />
+                <p><strong>Total Price:</strong> <strong>{{ totalPrice }} AED</strong></p>
+                <button class="placeOrder" v-if="isOrderComplete && checkoutPage" v-on:click="submitOrder">Place Order</button>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="showPopup" class="popup">{{ popupMessage }}</div>
+          <div v-if="showModal" class="modal-overlay">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2>Order Confirmation</h2>
+                <button class="close-modal" @click="closeModal">×</button>
+              </div>
+              <div class="modal-body">
+                <p>Your order has been placed successfully!</p>
+                <div class="order-details">
+                  <h3>Order Details</h3>
+                  <p><strong>Order Number:</strong> #{{ Math.floor(Math.random() * 1000000) }}</p>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="modal-button" @click="closeModal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CHATBOT TOGGLE BUTTON -->
+      <button class="chatbot-fab" @click="toggleChatbot" v-if="!showChatbot">
+        <i class="fa-solid fa-comment-dots"></i>
+      </button>
+    </div>
+
+    <!-- BOOK DETAILS MODAL -->
+    <div v-if="showBookDetailsModal" class="book-details-modal" @click="closeBookDetails">
+      <div class="book-details-content" @click.stop>
+        <div class="book-details-header">
+          <h2>Book Details</h2>
+          <button class="book-details-close" @click="closeBookDetails">&times;</button>
+        </div>
+        <div class="book-details-body">
+          <div class="book-details-image">
+            <img :src="selectedBook.image" :alt="selectedBook.title" />
+          </div>
+          <div class="book-details-info">
+            <div class="book-details-title">{{ selectedBook.title }}</div>
+            <div class="book-details-author">by {{ selectedBook.author }}</div>
+            
+            <div class="book-details-field">
+              <span class="book-details-label">Genre:</span>
+              <span class="book-details-value">{{ selectedBook.genre }}</span>
+            </div>
+            
+            <div class="book-details-field">
+              <span class="book-details-label">Price:</span>
+              <span class="book-details-value book-details-price">{{ selectedBook.price }} AED</span>
+            </div>
+            
+            <div class="book-details-field">
+              <span class="book-details-label">Available:</span>
+              <span class="book-details-value">{{ selectedBook.AvailableInventory }} copies</span>
+            </div>
+            
+            <div class="book-details-field">
+              <span class="book-details-label">Book ID:</span>
+              <span class="book-details-value">#{{ selectedBook.id }}</span>
+            </div>
+            
+            <div class="book-details-description">
+              <h4>Description</h4>
+              <p>{{ getBookDescription(selectedBook) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var RapidRead = new Vue({
+      el: "#app",
+      data: {
+        apiUrl: 'http://localhost:3000',
+        currentPage: 'landing',
+        sitename: "Rapid Read",
+        searchQuery: "",
+        sortCategory: "price",
+        sortOrder: "asc",
+        showChatbot: false,
+        chatInput: "",
+        chatMessages: [
+          { text: "Hello! How can I help you today?", sender: "bot" },
+        ],
+        showBookDetailsModal: false,
+        selectedBook: null,
+        authToken: null,
+        heroImages: [ 
+          "images/book1.jpeg",
+          "images/book2.jpg",
+          "images/book3.jpg"
+        ],
+        products: [], // This will be populated from the database
+        cart: [],
+        order: {
+          firstName: "",
+          lastName: "",
+          address: "",
+          city: "",
+          phone: null,
+        },
+        totalPrice: 0,
+        cartitemcount: 0,
+        checkoutPage: false,
+        showPopup: false,
+        popupMessage: "",
+        showModal: false,
+        // --- Auth State ---
+        isLoggedIn: false,
+        user: null,
+        authError: "",
+        login: {
+          email: "",
+          password: "",
+        },
+        register: {
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+        },
+        searchTimeout: null, // For debouncing search
+      },
+      
+      mounted() {
+        // Check for existing auth token (removed localStorage usage)
+        this.currentPage = 'landing';
+        // Always fetch products when the app loads
+        this.fetchProducts();
+      },
+      
+      methods: {
+        goToLanding() {
+          this.currentPage = 'landing';
+        },
+        
+        logout() {
+          this.isLoggedIn = false;
+          this.user = null;
+          this.authToken = null;
+          this.currentPage = 'landing';
+          // Clear cart on logout
+          this.cart = [];
+          this.cartitemcount = 0;
+          this.totalPrice = 0;
+        },
+
+        async registerUser() {
+          console.log('Registering:', this.register);
+
+          try {
+            const response = await fetch('http://localhost:3000/auth/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(this.register),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              this.authToken = data.token;
+              this.user = data.user;
+              this.isLoggedIn = true;
+
+              // Clear form
+              this.register.firstName = '';
+              this.register.lastName = '';
+              this.register.email = '';
+              this.register.password = '';
+              this.authError = '';
+
+              this.currentPage = 'products';
+            } else {
+              this.authError = data.message || 'Registration failed';
+              console.error('Server says:', this.authError);
+            }
+          } catch (error) {
+            console.error('Registration error:', error);
+            this.authError = 'Registration failed. Could not reach server.';
+          }
+        },
+
+        async loginUser() {
+          console.log('Logging in user with:', this.login);
+          console.log('API URL:', this.apiUrl);
+
+          try {
+            const response = await fetch(`${this.apiUrl}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.login),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              this.authError = errorData.message || 'Login failed';
+              console.error("Server says:", errorData.message);
+              return;
+            }
+
+            const data = await response.json();
+            this.authToken = data.token;
+            this.user = data.user;
+            this.isLoggedIn = true;
+
+            // Clear form and redirect
+            this.login.email = '';
+            this.login.password = '';
+            this.currentPage = 'products';
+            this.authError = '';
+          } catch (error) {
+            console.error("Login error:", error);
+            this.authError = 'Login failed. Please try again.';
+          }
+        },
+
+        async fetchProducts() {
+          try {
+            const baseUrl = "http://localhost:3000";
+            const url = this.searchQuery.trim()
+              ? `${baseUrl}/collection/Products/search?q=${encodeURIComponent(this.searchQuery)}`
+              : `${baseUrl}/collection/Products`;
+
+            console.log('Fetching products from:', url);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Received products:', data);
+            
+            // Process the products to ensure proper image URLs
+            this.products = data.map(product => {
+              // If image doesn't start with http, prepend the server URL
+              if (product.image && !product.image.startsWith('http')) {
+                product.image = `http://localhost:3000/images/${product.image}`;
+              }
+              return product;
+            });
+            
+            console.log('Processed products:', this.products);
+          } catch (error) {
+            console.error("Error fetching products:", error);
+            this.popupMessage = "Failed to load products. Please try again.";
+            this.showPopup = true;
+            setTimeout(() => {
+              this.showPopup = false;
+            }, 3000);
+          }
+        },
+        
+        // Debounced search to avoid too many API calls
+        debounceSearch() {
+          clearTimeout(this.searchTimeout);
+          this.searchTimeout = setTimeout(() => {
+            this.fetchProducts();
+          }, 500); // Wait 500ms after user stops typing
+        },
+        
+        // Update cart operations to sync with backend
+        async addToCart(product) {
+          if (!this.isLoggedIn) {
+            this.popupMessage = "Please log in to add items to your cart.";
+            this.showPopup = true;
+            setTimeout(() => {
+              this.showPopup = false;
+            }, 3000);
+            this.currentPage = "login";
+            return;
+          }
+
+          try {
+            // Add to local cart immediately for better UX
+            this.cart.push(product);
+            product.AvailableInventory--;
+            this.cartitemcount++;
+            this.totalPrice += product.price;
+
+            // Optionally sync with backend
+            if (this.authToken) {
+              await fetch('http://localhost:3000/cart/add', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${this.authToken}`
+                },
+                body: JSON.stringify({
+                  productId: product.id,
+                  quantity: 1
+                })
+              });
+            }
+          } catch (error) {
+            console.error('Error adding to cart:', error);
+            // Revert changes if API call fails
+            this.cart.pop();
+            product.AvailableInventory++;
+            this.cartitemcount--;
+            this.totalPrice -= product.price;
+            
+            this.popupMessage = "Failed to add item to cart. Please try again.";
+            this.showPopup = true;
+            setTimeout(() => {
+              this.showPopup = false;
+            }, 3000);
+          }
+        },
+        
+        removeFromCart(index) {
+          const item = this.cart[index];
+          this.cart.splice(index, 1);
+          item.AvailableInventory++;
+          this.cartitemcount--;
+          this.totalPrice -= item.price;
+        },
+        
+        canAddToCart(product) {
+          return product.AvailableInventory > 0;
+        },
+        
+        toggleCheckout() {
+          this.checkoutPage = !this.checkoutPage;
+        },
+        
+        validateName(field) {
+          const value = this.order[field];
+          if (value && !/^[a-zA-Z\s]+$/.test(value)) {
+            this.order[field] = value.replace(/[^a-zA-Z\s]/g, "");
+          }
+        },
+        
+        submitOrder() {
+          this.showModal = true;
+          this.cart = [];
+          this.cartitemcount = 0;
+          this.totalPrice = 0;
+          this.order = {
+            firstName: "",
+            lastName: "",
+            address: "",
+            city: "",
+            phone: null,
+          };
+        },
+        
+        closeModal() {
+          this.showModal = false;
+          this.checkoutPage = false;
+        },
+        
+        toggleChatbot() {
+          this.showChatbot = !this.showChatbot;
+        },
+        
+        async sendMessage() {
+          if (this.chatInput.trim() === "") return;
+          this.chatMessages.push({ text: this.chatInput, sender: "user" });
+          const userMessage = this.chatInput;
+          this.chatInput = "";
+          try {
+            const response = await fetch("http://localhost:3000/chatbot/respond", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ message: userMessage }),
+            });
+            const data = await response.json();
+            this.chatMessages.push({ text: data.response, sender: "bot" });
+          } catch (error) {
+            console.error("Error sending message:", error);
+            this.chatMessages.push({ text: "Sorry, I'm having trouble connecting right now.", sender: "bot" });
+          }
+        },
+        
+        // --- Book Details Methods ---
+        showBookDetails(book) {
+          this.selectedBook = book;
+          this.showBookDetailsModal = true;
+        },
+        
+        closeBookDetails() {
+          this.showBookDetailsModal = false;
+          this.selectedBook = null;
+        },
+        
+        getBookDescription(book) {
+          const descriptions = {
+            201: "The fifth book in the Harry Potter series follows Harry's fifth year at Hogwarts School of Witchcraft and Wizardry. As the wizarding world denies Voldemort's return, Harry faces new challenges including a tyrannical new Defense Against the Dark Arts teacher and the formation of Dumbledore's Army.",
+            202: "A sweeping novel that tells the story of Victor Dalmau, a young doctor, and Roser, a pregnant young woman, who flee the Spanish Civil War for Chile. Isabel Allende weaves a beautiful tale of love, loss, and the search for home.",
+            203: "A transcendent coming-of-age story about the sole survivor of a plane crash. Twelve-year-old Edward Adler must learn to live again after losing his entire family in a devastating accident.",
+            204: "Harper Lee's timeless classic explores themes of racial injustice and moral growth through the eyes of Scout Finch in 1930s Alabama. A powerful story about standing up for what's right.",
+            205: "James Clear presents a comprehensive guide to building good habits and breaking bad ones. This practical book offers proven strategies for making small changes that lead to remarkable results.",
+            206: "Paulo Coelho's philosophical novel follows Santiago, a young shepherd, on his journey to find treasure. A beautiful allegory about following your dreams and listening to your heart.",
+            207: "Join the Famous Five on another exciting adventure as they go camping and discover mysterious happenings. Enid Blyton's beloved characters face danger and solve mysteries in this classic children's adventure.",
+            208: "Louisa May Alcott's beloved novel follows the lives of the four March sisters - Meg, Jo, Beth, and Amy - as they grow from childhood to womanhood during the American Civil War.",
+            209: "George Eliot's masterpiece is set in the fictional town of Middlemarch and follows the lives of several characters as they navigate love, politics, and social change in 19th-century England.",
+            210: "Virginia Woolf's modernist novel follows Clarissa Dalloway through a single day in post-World War I London, exploring themes of time, memory, and the complexity of human consciousness.",
+            211: "Russell Banks' powerful novel tells the parallel stories of a New Hampshire oil burner repairman and a Haitian refugee, exploring themes of displacement and the American dream.",
+            212: "Antoine de Saint-Exupéry's beloved tale of a pilot who meets a young prince from another planet. A philosophical story about love, friendship, and what truly matters in life."
+          };
+          return descriptions[book.id] || "A wonderful book that will captivate readers with its engaging story and memorable characters.";
+        },
+      },
+      
+      computed: {
+        filteredProducts() {
+          if (this.searchQuery.trim()) {
+            // If there's a search query, fetch from server instead of filtering locally
+            this.fetchProducts();
+            return this.products;
+          }
+          return this.products;
+        },
+        
+        sortedProducts() {
+          let products = this.filteredProducts.slice();
+          if (this.sortCategory === "price") {
+            products.sort((a, b) =>
+              this.sortOrder === "asc" ? a.price - b.price : b.price - a.price
+            );
+          } else if (this.sortCategory === "author") {
+            products.sort((a, b) =>
+              this.sortOrder === "asc"
+                ? a.author.localeCompare(b.author)
+                : b.author.localeCompare(a.author)
+            );
+          } else if (this.sortCategory === "name") {
+            products.sort((a, b) =>
+              this.sortOrder === "asc"
+                ? a.title.localeCompare(b.title)
+                : b.title.localeCompare(a.title)
+            );
+          } else if (this.sortCategory === "genre") {
+            products.sort((a, b) =>
+              this.sortOrder === "asc"
+                ? a.genre.localeCompare(b.genre)
+                : b.genre.localeCompare(a.genre)
+            );
+          }
+          return products;
+        },
+        
+        isOrderComplete() {
+          return (
+            this.order.firstName &&
+            this.order.lastName &&
+            this.order.address &&
+            this.order.city &&
+            this.order.phone
+          );
+        },
+      },
+    });
+  </script>
+</body>
+</html>
