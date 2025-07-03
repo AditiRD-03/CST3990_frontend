@@ -352,6 +352,7 @@
       },
       
       mounted() {
+        
         // Check for existing auth token (removed localStorage usage)
         this.currentPage = 'landing';
         // Always fetch products when the app loads
@@ -448,6 +449,7 @@
         async fetchProducts() {
           try {
             const baseUrl = "https://cst3990-backend.onrender.com";
+             const collectionName = "Products";
             const url = this.searchQuery.trim()
               ? `${baseUrl}/collection/Products/search?q=${encodeURIComponent(this.searchQuery)}`
               : `${baseUrl}/collection/Products`;
@@ -466,7 +468,7 @@
             this.products = data.map(product => {
               // If image doesn't start with http, prepend the server URL
               if (product.image && !product.image.startsWith('http')) {
-                product.image = `https://cst3990-backend.onrender.com/images/${product.image}`;
+                product.image = `https://cst3990-backend.onrender.com/images/${product.image.split("\\").pop()}`;
               }
               return product;
             });
