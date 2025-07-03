@@ -451,8 +451,8 @@
             const baseUrl = "https://cst3990-backend.onrender.com";
              const collectionName = "Products";
             const url = this.searchQuery.trim()
-              ? `${baseUrl}/collection/Products/search?q=${encodeURIComponent(this.searchQuery)}`
-              : `${baseUrl}/collection/Products`;
+              ? `${baseUrl}/collection/${collectionName}/search?q=${encodeURIComponent(this.searchQuery)}`
+        : `${baseUrl}/collection/${collectionName}`;
 
             console.log('Fetching products from:', url);
             
