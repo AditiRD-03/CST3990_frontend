@@ -6,69 +6,10 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
-  <style>
-    /* Basic styling to make the app functional */
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .auth-modal { background: white; padding: 20px; border-radius: 8px; max-width: 400px; width: 90%; }
-    .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .close-auth { background: none; border: none; font-size: 24px; cursor: pointer; }
-    .auth-body input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; }
-    .auth-btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; cursor: pointer; }
-    .auth-error { color: red; margin-top: 10px; }
-    .navbar { background: #333; color: white; padding: 10px 0; }
-    .nav-content { display: flex; align-items: center; gap: 20px; padding: 0 20px; }
-    .nav-btn { background: #555; color: white; border: none; padding: 8px 16px; cursor: pointer; }
-    .search-bar input { padding: 8px; }
-    .checkout-button { background: #28a745; color: white; border: none; padding: 8px 16px; cursor: pointer; }
-    .landing-hero { display: flex; padding: 40px 20px; }
-    .landing-hero-left { flex: 1; }
-    .landing-hero-right { flex: 1; text-align: center; }
-    .browse-btn { background: #007bff; color: white; border: none; padding: 12px 24px; cursor: pointer; }
-    .about-page, .contact-page { padding: 20px; }
-    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
-    .product-item { border: 1px solid #ddd; padding: 15px; text-align: center; }
-    .product-item img { max-width: 100%; height: 200px; object-fit: cover; cursor: pointer; }
-    .addToCart { background: #28a745; color: white; border: none; padding: 8px 16px; cursor: pointer; }
-    .addToCart:disabled { background: #ccc; cursor: not-allowed; }
-    .popup { position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; padding: 10px 20px; border-radius: 4px; z-index: 1000; }
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; }
-    .modal-button { background: #007bff; color: white; border: none; padding: 8px 16px; cursor: pointer; }
-    .book-details-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .book-details-content { background: white; padding: 20px; border-radius: 8px; max-width: 600px; width: 90%; }
-    .book-details-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .book-details-close { background: none; border: none; font-size: 24px; cursor: pointer; }
-    .book-details-body { display: flex; gap: 20px; }
-    .book-details-image img { max-width: 200px; }
-    .checkout-div { padding: 20px; }
-    .checkout-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-    .input-fields input { width: 100%; padding: 8px; margin: 5px 0; }
-    .cart-item-box { display: flex; gap: 10px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
-    .cart-item-img { width: 60px; height: 80px; object-fit: cover; cursor: pointer; }
-    .delete-button { background: #dc3545; color: white; border: none; padding: 4px 8px; cursor: pointer; }
-    .placeOrder { background: #28a745; color: white; border: none; padding: 12px 24px; cursor: pointer; }
-    .chatbot-fab { position: fixed; bottom: 20px; right: 20px; background: #007bff; color: white; border: none; border-radius: 50%; width: 60px; height: 60px; cursor: pointer; }
-    .chatbot-side-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 300px; background: white; border-left: 1px solid #ddd; z-index: 999; display: flex; flex-direction: column; }
-    .chatbot-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #007bff; color: white; }
-    .chatbot-messages { flex: 1; padding: 10px; overflow-y: auto; }
-    .message { margin: 10px 0; }
-    .message.user { text-align: right; }
-    .message-bubble { display: inline-block; padding: 8px 12px; border-radius: 8px; max-width: 80%; }
-    .message.user .message-bubble { background: #007bff; color: white; }
-    .message.bot .message-bubble { background: #f0f0f0; }
-    .chatbot-input { display: flex; padding: 10px; }
-    .chatbot-input input { flex: 1; padding: 8px; }
-    .send-button { background: #007bff; color: white; border: none; padding: 8px 12px; cursor: pointer; }
-    .filter-section { padding: 0 20px; }
-    .filter-section select { padding: 8px; margin: 0 10px; }
-  </style>
 </head>
 <body>
   <header>
-    <h1 @click="goToLanding" style="cursor: pointer;">RapidReads</h1>
+    <h1 @click="goToLanding" style="cursor: pointer;">Rapid Read</h1>
   </header>
   <div id="app">
     
@@ -158,19 +99,21 @@
     </div>
     
     <!-- ABOUT PAGE -->
-    <div v-if="currentPage==='about'" class="about-page">
-      <h2>About Rapid Read</h2>
-      <p>
-        At Rapid Read, we're passionate about connecting readers with their next favorite book. Founded in 2024 by avid book lovers, our mission is to make discovering and buying books fast, easy, and enjoyable.
-      </p>
-      <p>
-        We carefully curate our selection, offer speedy delivery, and aim for a seamless shopping experience. Whether you're into classics, bestsellers, or hidden gems, Rapid Read is here for you!
-      </p>
-      <p>
-        Happy Reading! 📚
-      </p>
-    </div>
-
+       <div v-if="currentPage==='about'" class="about-page">
+  <h2>About <span class="highlight">Rapid Read</span></h2>
+  <p>
+    📖 <strong>Founded in 2025</strong> by a group of passionate book lovers, Rapid Read is your go-to platform for discovering and buying books with speed and ease.
+  </p>
+  <p>
+    We pride ourselves on a <span class="highlight">carefully curated collection</span>, lightning-fast delivery, and a user-friendly shopping experience.
+  </p>
+  <p>
+    Whether you're chasing bestsellers, timeless classics, or hidden literary gems <strong>we’ve got something for every reader.</strong>
+  </p>
+  <p class="signature">
+    Happy Reading! <span class="emoji">📚</span>
+  </p>
+</div>
     <!-- CONTACT PAGE -->
     <div v-if="currentPage==='contact'" class="contact-page">
       <h2>Contact Us</h2>
